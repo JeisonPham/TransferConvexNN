@@ -560,44 +560,44 @@ if GD_only ==0:
 
 
     #  Convex1
-    learning_rate = 1e-6 # 1e-6 for sgd    
+    learning_rate = 1e-6 # 1e-6 for sgd
     print('Convex Random1-mu={}'.format(learning_rate))
-    results_cvx1 = sgd_solver_cvxproblem(ds_train, test_loader, num_epochs2, num_neurons, beta, 
-                            learning_rate, batch_size, rho, u_vectors, solver_type, LBFGS_param, verbose=True, 
+    results_cvx1 = sgd_solver_cvxproblem(ds_train, test_loader, num_epochs2, num_neurons, beta,
+                            learning_rate, batch_size, rho, u_vectors, solver_type, LBFGS_param, verbose=True,
                                              n=n, d=d, device='cuda')
 
     #  Convex2
-    learning_rate = 5e-7 # 1e-6 for sgd    
+    learning_rate = 5e-7 # 1e-6 for sgd
     print('Convex Random2-mu={}'.format(learning_rate))
-    results_cvx2 = sgd_solver_cvxproblem(ds_train, test_loader, num_epochs2, num_neurons, beta, 
-                            learning_rate, batch_size, rho, u_vectors, solver_type, LBFGS_param, verbose=True, 
+    results_cvx2 = sgd_solver_cvxproblem(ds_train, test_loader, num_epochs2, num_neurons, beta,
+                            learning_rate, batch_size, rho, u_vectors, solver_type, LBFGS_param, verbose=True,
                                              n=n, d=d, device='cuda')
     
     
     
     #  Convex with convolutional patterns
-    print('Generating conv sign patterns')
-    num_neurons,sign_pattern_list, u_vector_list = generate_conv_sign_patterns(Apatch, P, verbose)
-    sign_patterns = np.array([sign_pattern_list[i].int().data.numpy() for i in range(num_neurons)])
-    u_vectors = np.asarray(u_vector_list).reshape((num_neurons, A.shape[1])).T
-    
-    ds_train = PrepareData3D(X=A, y=y, z=sign_patterns.T)
-    ds_train = DataLoader(ds_train, batch_size=batch_size, shuffle=True)
-    
-    #  Convex Conv1
-    learning_rate = 1e-6       
-    print('Convex Conv1-mu={}'.format(learning_rate))
-    results_cvx_conv1 = sgd_solver_cvxproblem(ds_train, test_loader, num_epochs2, num_neurons, beta, 
-                            learning_rate, batch_size, rho, u_vectors, solver_type, LBFGS_param, verbose=True, 
-                                             n=n, d=d, device='cuda')
-
-    #  Convex Conv2 
-    learning_rate = 5e-7       
-    print('Convex Conv2-mu={}'.format(learning_rate))
-    results_cvx_conv2 = sgd_solver_cvxproblem(ds_train, test_loader, num_epochs2, num_neurons, beta, 
-                            learning_rate, batch_size, rho, u_vectors, solver_type, LBFGS_param, verbose=True, 
-                                             n=n, d=d, device='cuda')
-    
+    # print('Generating conv sign patterns')
+    # num_neurons,sign_pattern_list, u_vector_list = generate_conv_sign_patterns(Apatch, P, verbose)
+    # sign_patterns = np.array([sign_pattern_list[i].int().data.numpy() for i in range(num_neurons)])
+    # u_vectors = np.asarray(u_vector_list).reshape((num_neurons, A.shape[1])).T
+    #
+    # ds_train = PrepareData3D(X=A, y=y, z=sign_patterns.T)
+    # ds_train = DataLoader(ds_train, batch_size=batch_size, shuffle=True)
+    #
+    # #  Convex Conv1
+    # learning_rate = 1e-6
+    # print('Convex Conv1-mu={}'.format(learning_rate))
+    # results_cvx_conv1 = sgd_solver_cvxproblem(ds_train, test_loader, num_epochs2, num_neurons, beta,
+    #                         learning_rate, batch_size, rho, u_vectors, solver_type, LBFGS_param, verbose=True,
+    #                                          n=n, d=d, device='cuda')
+    #
+    # #  Convex Conv2
+    # learning_rate = 5e-7
+    # print('Convex Conv2-mu={}'.format(learning_rate))
+    # results_cvx_conv2 = sgd_solver_cvxproblem(ds_train, test_loader, num_epochs2, num_neurons, beta,
+    #                         learning_rate, batch_size, rho, u_vectors, solver_type, LBFGS_param, verbose=True,
+    #                                          n=n, d=d, device='cuda')
+    #
     
 # plots and saves the results
 import pickle
