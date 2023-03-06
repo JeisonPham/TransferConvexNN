@@ -101,13 +101,49 @@ def test_model(model, trainset):
 # np.save('output_mobileNet.npy', output_mobileNet)
 
 if __name__ == "__main__":
+
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--max_pool', type=bool)
+    max_pool = parser.parse_args().max_pool
+
+
     models = ['resnet18', 'resnet34', 'resnet50', 'vgg16', 'mobileNet']
     for model in models:
         net = globals()[model].cuda()
-        output, labels = test_model(net, trainset)
-        np.save(f'train_{model}_data.npy', output)
-        np.save(f'train_{model}_labels.npy', labels)
+        train_output, train_labels = test_model(net, trainset)
 
-        output, labels = test_model(net, testset)
-        np.save(f"test_{model}_data.npy", output)
-        np.save(f"test_{model}_labels.npy", labels)
+        test_output, test_labels = test_model(net, testset)
+
+        train_output = train_output.reshape(train_output.shape[0], -1)
+        test_output = test_output.reshape(test_output.shape[0], -1)
+
+        # bilinear interpolation seems to be better used for dl model input, not output
+        # do max pooling to reduce the dimension
+        if max_pool:
+            if model == 'resnet18' or model == 'resnet34': # (50000, 512, 1, 1)
+                train_output = torch.nn.functional.max_pool1d(torch.from_numpy(train_output), kernel_size=2)
+                test_output = torch.nn.functional.max_pool1d(torch.from_numpy(test_output), kernel_size=2)
+            elif model == 'resnet50': # (50000, 2048, 1, 1)
+                train_output = torch.nn.functional.max_pool1d(torch.from_numpy(train_output), kernel_size=8)
+                test_output = torch.nn.functional.max_pool1d(torch.from_numpy(test_output), kernel_size=8)
+            elif model == 'vgg16': # (50000, 512, 7, 7)
+                train_output = torch.nn.functional.max_pool1d(torch.from_numpy(train_output), kernel_size=98)
+                test_output = torch.nn.functional.max_pool1d(torch.from_numpy(test_output), kernel_size=98)
+            elif model == 'mobileNet': # (50000, 1280, 1, 1)
+                train_output = torch.nn.functional.max_pool1d(torch.from_numpy(train_output), kernel_size=5)
+                test_output = torch.nn.functional.max_pool1d(torch.from_numpy(test_output), kernel_size=5)
+
+            # convert it back to 50000 x 256 x 1 x 1
+            train_output = train_output.numpy()
+            test_output = test_output.numpy()
+            train_output = train_output.reshape(50000, 256, 1, 1)
+            test_output = test_output.reshape(10000, 256, 1, 1)
+
+        np.save(f'train_{model}_data.npy', train_output)
+        np.save(f'train_{model}_labels.npy', train_labels)
+
+        np.save(f"test_{model}_data.npy", test_output)
+        np.save(f"test_{model}_labels.npy", test_labels)
+
+
