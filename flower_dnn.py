@@ -3,15 +3,46 @@ import matplotlib.pyplot as plt
 import torch
 from PIL import Image
 
-# load CIFAR-10 dataset
 from torchvision import datasets, transforms
 
-normalize = transforms.Normalize(mean=[0.507, 0.487, 0.441], std=[0.267, 0.256, 0.276])
-transform = transforms.Compose([transforms.ToTensor(), normalize])  # normalize to (-1, 1)
-trainset = datasets.CIFAR10('data', download=True, train=True, transform=transform)
-testset = datasets.CIFAR10('data', download=True, train=False, transform=transform)
+
+# load flower dataset
+class dataset(torch.utils.data.Dataset):
+    def __init__(self, train, data_index, transforms):
+        super().__init__()
+        self.train = train
+        self.data_index = data_index
+        self.transforms = transforms
+    
+    def __len__(self):
+        return len(self.data_index)
+
+    def __getitem__(self, index):
+        img_id = self.data_index[index]
+        num = str(self.data_index[index]+1)
+        if len(num) < 4:
+            diff = 4 - len(num)
+            for i in range(diff):
+                num = '0' + num
+        path = "flower_data/jpg/image_" + num + ".jpg"
+        picture = Image.open(path)
+        label = img_id // 80
+        picture = self.transforms(picture)
+        return picture, label
+
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.507, 0.487, 0.441], std=[0.267, 0.256, 0.276]),
+    transforms.Resize((224, 224))
+]
+)
 
 
+index = np.random.permutation(np.arange(1360))
+train_index = index[:1020]
+test_index = index[1020:]
+trainset = dataset(train=True, data_index=train_index, transforms=transform)
+testset = dataset(train=False, data_index=test_index, transforms=transform)
 
 
 # define the network
@@ -76,7 +107,6 @@ def test_model(model, trainset):
     labels = np.concatenate(labels_total, axis=0)
 
     return output_total, labels
-
 
 
 if __name__ == "__main__":
